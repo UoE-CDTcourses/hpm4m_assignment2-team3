@@ -17,12 +17,12 @@ int main(){
   int m, n,m1,n1;
   int i, j, count = 0;
   double pi = 3.14159265358979323846;
-  m = 10;
+  m = 1000;
   n = 5;
-  mm = 10;
+  mm = 1000;
   dx = 1 / mm;  // x \in (0,1)
   T = 0.5;     // T=0.5
-  dt = 0.005;
+  dt = 0.0000005;
 
   float initial[m + 1+size+1], calcu[m + 1+size+1];
 
@@ -49,6 +49,9 @@ int main(){
   cout << "sep " << sep << endl;
   cout << "dtxx   size " << dtxx << "  "<<size << endl;
   //cout << "I am "<<rank<<" out of "<<size<<endl;"
+  double  t_start, t_end;
+  MPI_Barrier(MPI_COMM_WORLD);
+  t_start = MPI_Wtime();
 
   for (i = 0; i < n; i++) { // n steps on time variable
     calcu[0] = 0;
@@ -96,6 +99,7 @@ int main(){
 	}
   }
 
+
   if (rank > 0 && rank < size - 1 ) {
 	MPI_Send(&(calcu[(rank)*sep+1]), sep, MPI_FLOAT, 0, rank, MPI_COMM_WORLD);
 }
@@ -105,6 +109,8 @@ int main(){
 	  MPI_Send(&(calcu[(rank)*sep + 1]), i, MPI_FLOAT, 0, rank, MPI_COMM_WORLD);
   }
 
+
+
 if (rank == 0) {
 	for (i = 1; i < size-1; i++) {
 		MPI_Recv(&(calcu[i*sep+1]), sep, MPI_FLOAT, i , i , MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -112,6 +118,9 @@ if (rank == 0) {
 	MPI_Recv(&(calcu[(size-1) * sep + 1]), m-1-sep*(size-1), MPI_FLOAT, size - 1, size - 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	calcu[0] = 0;
 	calcu[m] = 0;
+
+
+
 	cout<<"This is the result: "<<endl;
 	for (i = 0; i <= m; i++) {
 		cout << calcu[i] << " ";
@@ -127,8 +136,12 @@ if (rank == 0) {
 	
 	cout << 0 << " ";
 	cout << " " << endl;
+	
 
 }
+MPI_Barrier(MPI_COMM_WORLD);
+t_end = MPI_Wtime();
+cout << "Running time  " << t_end - t_start << endl;
 
   MPI_Finalize();
 
